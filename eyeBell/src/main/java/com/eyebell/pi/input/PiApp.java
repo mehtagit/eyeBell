@@ -18,7 +18,6 @@ import com.google.gson.Gson;
 public class PiApp {
 	
 	@Autowired
-	@Qualifier("server")
 	private Server server;
 	
 	public static ClientMain client;
@@ -35,8 +34,16 @@ public class PiApp {
 	{
 		initClient();
 		startServer();
-		new Thread(new SignalListener(client)).start();
+		System.out.println("server started at 4444 port");
+		//new Thread(new SignalListener(client)).start();
+		
 		Utillity.callUrl("http://127.0.0.1:4444/connect", 5000, 5000);
+		try{
+		Thread.sleep(10000);
+		}catch(Exception e){}
+		System.out.println("signal receiver init");
+		new SignalListener(client).test();
+		
 	}
 	
 	public void startServer()
@@ -48,7 +55,7 @@ public class PiApp {
 			sh.addServletWithMapping(Connect.class, "/connect");
 			sh.addServletWithMapping(SendRequest.class, "/send");
 			server.start();
-			server.join();
+			//server.join();
 		} 
 		catch (Exception e) 
 		{
@@ -70,7 +77,7 @@ public class PiApp {
 	{
 		client = new ClientMain();
 		client.setClientId("Pi_1");
-		client.setSERVER("ws://127.0.0.1:8888/ws/chat");
+		client.setSERVER("ws://127.0.0.1:8025/ws/chat");
 		System.out.println("client init  "+client.getSERVER());
 	}
 }

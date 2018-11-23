@@ -19,13 +19,6 @@ public class Config {
 	@Value("${cdr.server.ip}")
 	public String cdr_ip;
 
-	@Bean
-	public Server server() {
-		return new Server(4444);
-	}
+	
 
-	@Bean
-	public Server server1() {
-		return new Server(4444);
 	}
-}

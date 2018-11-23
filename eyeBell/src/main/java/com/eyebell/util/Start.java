@@ -23,7 +23,7 @@ public class Start
 		}
 		else if (gg[0].equals("server"))
 		{
-			ServerMain server = ctx.getBean("server",ServerMain.class);
+			ServerMain server = ctx.getBean("serverApp",ServerMain.class);
 			server.Start();
 		}
 	}

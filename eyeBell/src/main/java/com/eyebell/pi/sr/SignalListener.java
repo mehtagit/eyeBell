@@ -18,7 +18,7 @@ import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 //import com.whileidea.pojo.Image;
 //import com.whileidea.util.UtilBase64Image;
 
-@Component("listeningBell")
+
 public class SignalListener implements Runnable {
 	
 	ClientMain client= null;

@@ -6,28 +6,29 @@ import java.util.Set;
 
 import javax.websocket.Session;
 
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletHandler;
 import org.springframework.stereotype.Component;
 
 import com.eyebell.server.config.Config;
 
 
 
-@Component("server")
+@Component("serverApp")
 public class ServerMain {
 	
 	static Set<Session> peers = Collections.synchronizedSet(new HashSet<Session>());
-	private org.eclipse.jetty.server.Server server;
+	
 		
 		public void Start() {
 			new Config().load();
-			startServer();
-		org.glassfish.tyrus.server.Server server =
-				new org.glassfish.tyrus.server.Server("127.0.0.1", 8888, "/ws", null,Server.class);
+			System.out.println("config is loaded");
+			//startServer();
+			System.out.println("jetty server started....");
+			org.glassfish.tyrus.server.Server gfserver =
+					new org.glassfish.tyrus.server.Server("127.0.0.1", 8025, "/ws", null,Server.class);
 		try {
 		     
-	            server.start();
+			System.out.println("Initialized server");
+	            gfserver.start();
 	            System.out.println("Press any key to stop the server..");
 	            waitHere();
 	            //new Scanner(System.in).nextLine();
@@ -47,12 +48,12 @@ public class ServerMain {
 		{
 			try 
 			{
-				server = new Server(5555);
-				ServletHandler sh = new ServletHandler();
-				server.setHandler(sh);
+				org.eclipse.jetty.server.Server jettyserver = new org.eclipse.jetty.server.Server(5555);
+				org.eclipse.jetty.servlet.ServletHandler sh = new org.eclipse.jetty.servlet.ServletHandler();
+				jettyserver.setHandler(sh);
 				sh.addServletWithMapping(Receiver.class, "/send");
-				server.start();
-				server.join();
+				jettyserver.start();
+			//	server.join();
 			} 
 			catch (Exception e) 
 			{
