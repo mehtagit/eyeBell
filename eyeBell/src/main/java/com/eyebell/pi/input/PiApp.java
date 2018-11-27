@@ -1,83 +1,41 @@
 package com.eyebell.pi.input;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.glassfish.grizzly.http.server.Request;
-
-import com.eyebell.pi.lib.*;
+import com.eyebell.pi.lib.PiClient;
 import com.eyebell.pi.sr.SignalListener;
-import com.eyebell.util.Utillity;
-import com.google.gson.Gson;
+import com.eyebell.pojo.Action;
+import com.eyebell.pojo.Request;
+
 @Component
 public class PiApp {
 	
 	@Autowired
-	private Server server;
+	private PiClient piClient;
 	
-	public static ClientMain client;
+	@Autowired
+	private SignalListener signalListener;
 	
-	public ClientMain getClient() {
-		return client;
-	}
 
-	public void setClient(ClientMain client) {
-		this.client = client;
-	}
-
+	
 	public void start()
 	{
-		initClient();
-		startServer();
-		System.out.println("server started at 4444 port");
-		//new Thread(new SignalListener(client)).start();
-		
-		Utillity.callUrl("http://127.0.0.1:4444/connect", 5000, 5000);
+		System.out.println("piclient ["+piClient.getPiId()+"] sr ["+signalListener+"]");
+		piClient.connectToServer();
+		Request request = new Request();
+		request.setAction(Action.REGISTER_PI);
+		request.setPiId(piClient.getPiId());
+		piClient.sendMessage(request);
 		try{
-		Thread.sleep(10000);
+		Thread.sleep(20000);
 		}catch(Exception e){}
 		System.out.println("signal receiver init");
-		new SignalListener(client).test();
+		signalListener.test();
 		
 	}
 	
-	public void startServer()
-	{
-		try 
-		{
-			ServletHandler sh = new ServletHandler();
-			server.setHandler(sh);
-			sh.addServletWithMapping(Connect.class, "/connect");
-			sh.addServletWithMapping(SendRequest.class, "/send");
-			server.start();
-			//server.join();
-		} 
-		catch (Exception e) 
-		{
-			e.printStackTrace();
-		}
-	}
-	public static void main(String gg[])
-	{
-		com.eyebell.pojo.Request req = new com.eyebell.pojo.Request();
-		HashMap<String,String> map = new HashMap<String,String>();
-		map.put("piid", "abc");
-		req.setData(map);
-		req.setAction(com.eyebell.pojo.Action.CAMERA_ON);
-		req.setId("1111");
-		req.setMsisdn("99332");
-		System.out.println(new Gson().toJson(req));
-	}
-	public void initClient()
-	{
-		client = new ClientMain();
-		client.setClientId("Pi_1");
-		client.setSERVER("ws://127.0.0.1:8025/ws/chat");
-		System.out.println("client init  "+client.getSERVER());
-	}
+	
+	
 }

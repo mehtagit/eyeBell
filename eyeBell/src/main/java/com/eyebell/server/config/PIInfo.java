@@ -3,8 +3,15 @@ package com.eyebell.server.config;
 public class PIInfo {
 private String piId;
 private String msisdn;
-private String appid;
 private String deviceId;
+private javax.websocket.Session session;
+
+public javax.websocket.Session getSession() {
+	return session;
+}
+public void setSession(javax.websocket.Session session) {
+	this.session = session;
+}
 public String getPiId() {
 	return piId;
 }
@@ -16,12 +23,6 @@ public String getMsisdn() {
 }
 public void setMsisdn(String msisdn) {
 	this.msisdn = msisdn;
-}
-public String getAppid() {
-	return appid;
-}
-public void setAppid(String appid) {
-	this.appid = appid;
 }
 public String getDeviceId() {
 	return deviceId;

@@ -1,9 +1,5 @@
 package com.eyebell.pi.input;
 
-import java.io.IOException;
-import java.util.Random;
-
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +24,7 @@ public class SendRequest extends HttpServlet
 			switch(action)
 			{
 			case SEND_NOTIFICATION:
-				PiApp.client.sendMessage(request);
+				//PiApp.client.sendMessage(request);
 				System.out.println("data send from client ["+data+"]");
 				break;
 			case CAMERA_ON:

@@ -1,13 +1,9 @@
 package com.eyebell.pi.input;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.eyebell.pi.lib.ClientMain;
 
 public class Connect extends HttpServlet 
 {
@@ -16,7 +12,7 @@ public class Connect extends HttpServlet
 		try 
 		{
 			System.out.println("client sending connect request");
-			PiApp.client.connectToServer();
+	//		PiApp.client.connectToServer();
 			
 		} 
 		catch (Exception e) 

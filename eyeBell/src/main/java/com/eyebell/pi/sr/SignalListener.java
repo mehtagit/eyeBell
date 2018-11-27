@@ -2,10 +2,10 @@ package com.eyebell.pi.sr;
 
 import java.util.HashMap;
 
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.eyebell.pi.lib.Client;
-import com.eyebell.pi.lib.ClientMain;
+import com.eyebell.pi.lib.PiClient;
 import com.eyebell.pojo.Request;
 import com.eyebell.util.Utillity;
 import com.pi4j.io.gpio.GpioController;
@@ -21,13 +21,12 @@ import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 
 public class SignalListener implements Runnable {
 	
-	ClientMain client= null;
+	@Autowired
+	PiClient piClient;
 	
-	public SignalListener(ClientMain client)
-	{
-		this.client = client;
-	}
-
+	@Autowired @Qualifier("piUtillity")
+	com.eyebell.pi.config.Utillity utillity;
+	
 	public void run() {
 		System.out.println("<--Pi4J--> GPIO Listen Example ... started.");
 
@@ -46,7 +45,8 @@ public class SignalListener implements Runnable {
 		myButton.addListener(new GpioPinListenerDigital() 
 		{
 			// @Override
-			public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+			public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) 
+			{
 				// display pin state on console
 				System.out
 						.println(" --> GPIO PIN STATE CHANGE: " + event.getPin() + " = " + event.getState().getValue());
@@ -65,9 +65,8 @@ public class SignalListener implements Runnable {
 					map.put("url","https://fcm.googleapis.com/fcm/send ");
 					req.setData(map);
 					req.setAction(com.eyebell.pojo.Action.SEND_NOTIFICATION);
-					req.setId("1111");
 					req.setMsisdn("99332");
-					client.sendMessage(req);
+					piClient.sendMessage(req);
 				}			
 				}
 
@@ -78,10 +77,6 @@ public class SignalListener implements Runnable {
 		// keep program running until user aborts (CTRL-C)
 		while (true) {
 			try {
-				Thread.sleep(10000);
-				{
-					test();
-				}
 				Thread.sleep(10000);
 			} catch (Exception e) {
 				// TODO: handle exception
@@ -97,20 +92,27 @@ public class SignalListener implements Runnable {
 
 		public void test()
 		{
-			String randonid= Utillity.callUrl("http://127.0.0.1:4444/send?data={\"msisdn\":\"99332\",\"id\":\"1111\",\"action\":\"CAMERA_ON\",\"Data\":{\"piid\":\"abc\"}}\r\n" , 5000, 5000);
+			//camera on
+			int camId = utillity.cameraON();
+			
 			//send notification
-			String json_data = "{\"to\":\"dYKGjAQdvbg:APA91bHFMmNubb-6PNPOfff6wPkmoSlYi43kjeirfLDwKpZpjirSqgIFeM_q-UF66mPMoD22k7CW2ZvBs2o_XPXwxLFU3Cwnqt6o3F-xHO6JOgbiAOhw1iYi8xDVvAf54LsAxcxf5ax4\",\"data\": {\"message\": \"This is a Firebase Cloud Messaging Topic Message!#"+randonid+"\",\"title\":\"IOT\"}}";
+			//String json_data = "{\"to\":\"dYKGjAQdvbg:APA91bHFMmNubb-6PNPOfff6wPkmoSlYi43kjeirfLDwKpZpjirSqgIFeM_q-UF66mPMoD22k7CW2ZvBs2o_XPXwxLFU3Cwnqt6o3F-xHO6JOgbiAOhw1iYi8xDVvAf54LsAxcxf5ax4\",\"data\": {\"message\": \"This is a Firebase Cloud Messaging Topic Message!#"+randonid+"\",\"title\":\"IOT\"}}";
 			
 			Request req = new Request();
 			HashMap<String,String> map = new HashMap<String,String>();
-			map.put("piid", "abc");
-			map.put("json_data",json_data);
-			map.put("url","https://fcm.googleapis.com/fcm/send ");
+			map.put("RAND", ""+camId);
 			req.setData(map);
 			req.setAction(com.eyebell.pojo.Action.SEND_NOTIFICATION);
-			req.setId("1111");
-			req.setMsisdn("99332");
-			client.sendMessage(req);
+			req.setPiId(piClient.getPiId());
+			//send to server
+			piClient.sendMessage(req);
+			while (true) {
+				try {
+					Thread.sleep(10000);
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}
 
 		}
 }

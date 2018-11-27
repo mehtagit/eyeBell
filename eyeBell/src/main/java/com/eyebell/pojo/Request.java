@@ -8,32 +8,32 @@ import org.springframework.stereotype.Component;
 public class Request {
 
 	private String msisdn;
-	private String id;
+	private String piId;
 	private Action action;
-	private HashMap<String,String> Data;
+	private HashMap<String,String> data;
 
 	public String getMsisdn() {
 		return msisdn;
 	}
 
 	public HashMap<String, String> getData() {
-		return Data;
+		return data;
 	}
 
 	public void setData(HashMap<String, String> data) {
-		Data = data;
+		this.data = data;
 	}
 
 	public void setMsisdn(String msisdn) {
 		this.msisdn = msisdn;
 	}
 
-	public String getId() {
-		return id;
+	public String getPiId() {
+		return piId;
 	}
 
-	public void setId(String id) {
-		this.id = id;
+	public void setPiId(String piId) {
+		this.piId = piId;
 	}
 
 	public Action getAction() {
@@ -46,7 +46,7 @@ public class Request {
 
 	@Override
 	public String toString() {
-		return "Request [msisdn=" + msisdn + ", id=" + id + ", action=" + action + "]";
+		return "Request [msisdn=" + msisdn + ", pid=" + piId + ", action=" + action + "] data ["+data+"]";
 	}
 
 	
