@@ -4,7 +4,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.eyebell.pi.input.PiApp;
+import com.eyebell.pi.lib.PiApp;
+import com.eyebell.pi.lib.PiAppTest;
 import com.eyebell.server.ServerMain;
 public class Start
 {
@@ -21,6 +22,11 @@ public class Start
 			System.out.println("piApp in the main ["+piApp+"]");
 			piApp.start();
 			
+		}
+		else if (gg[0].equals("ctest"))
+		{
+			PiAppTest piapp = ctx.getBean("piAppTest",PiAppTest.class);
+			piapp.start();
 		}
 		else if (gg[0].equals("server"))
 		{

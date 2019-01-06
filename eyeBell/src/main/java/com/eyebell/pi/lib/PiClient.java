@@ -23,7 +23,16 @@ public class PiClient
 	private String piId = null;
 	@Autowired
 	private Gson gson;
+	private boolean isConnected;
 	
+	public boolean isConnected() {
+		return isConnected;
+	}
+
+	public void setConnected(boolean isConnected) {
+		this.isConnected = isConnected;
+	}
+
 	//public PiClient(){}
 	public PiClient(String server, String piId)
 	{
@@ -37,7 +46,9 @@ public class PiClient
 			clientManager = ClientManager.createClient();
 			this.session = clientManager.connectToServer(Client.class, new URI(server));
 			System.out.println("pi ["+piId+"] is connected to server ["+server+"] sessionId ["+session.getId()+"]");
+			isConnected = true;
 		} catch (Exception e) {
+			isConnected = false;
 			System.out.println("pi ["+piId+"] is unable to connect to server ["+server+"] Exception ["+e+"]");
 			e.printStackTrace();
 		}
@@ -45,6 +56,7 @@ public class PiClient
 
 	public void closeResources() {
 		try {
+			isConnected=false;
 			session.close();
 		} catch (Exception e) {
 			// TODO: handle exception

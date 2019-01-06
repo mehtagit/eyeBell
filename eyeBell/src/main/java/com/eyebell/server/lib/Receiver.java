@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.sun.net.httpserver.HttpHandler;
 import com.eyebell.pojo.Request;
+import com.eyebell.server.ServerService;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -23,6 +24,10 @@ public class Receiver implements HttpHandler
 {
 	@Autowired
 	DeviceMapper deviceMapper;
+	
+	@Autowired
+	ServerService serverService;
+	
 	@Override
 	public void handle(HttpExchange exchange) throws IOException 
 	{
@@ -46,15 +51,28 @@ public class Receiver implements HttpHandler
 	    System.out.println("before decoeed  [ "+data+" ] ");
 	    data = URLDecoder.decode(data);
 	    System.out.println("received from client ["+data+"]");
-	    Request request  = new Gson().fromJson(data, Request.class);
+	    Request request  = null;
+	    try{
+	    request = new Gson().fromJson(data, Request.class);
+	    }catch (Exception e) {
+			e.printStackTrace();
+		}
+	    System.out.println("parsed to request action ["+request.getAction()+"]");
 	    switch (request.getAction())
 	    {
 		case REGISTER_NEW_DEVICE:
-			System.out.println("LOGIN from app : "+data);
+			System.out.println("LOGIN from android : "+data);
 			String fcmid = request.getData().get("fcm_id");
 			System.out.println("I have received fcm id : "+fcmid);
-			deviceMapper.getMappingDb().get(request.getPiId()).setDeviceId(fcmid);;
-			break;				
+			deviceMapper.saveNewDevice(request);
+			//deviceMapper.getMappingDb().get(request.getPiId()).setDeviceId(fcmid);;
+		break;				
+		
+		case CAMERA_OFF:
+			System.out.println("Camera off request received");
+			String piId = deviceMapper.getPiIdFromMsisdn(request.getMsisdn());
+			serverService.sendMessage(piId, request);
+		break;
 		
 		default:
 			System.out.println("unable to understand the request");

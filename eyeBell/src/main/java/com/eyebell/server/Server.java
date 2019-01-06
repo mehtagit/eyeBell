@@ -15,10 +15,8 @@ import javax.websocket.server.ServerEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.eyebell.pi.input.PiApp;
 import com.eyebell.pojo.Action;
 import com.eyebell.pojo.Request;
-import com.eyebell.server.config.PIInfo;
 import com.eyebell.server.lib.DeviceMapper;
 import com.eyebell.util.Start;
 import com.eyebell.util.Utillity;
@@ -29,8 +27,8 @@ public class Server {
 
 	
 	DeviceMapper deviceMapper;
-			     //deviceMapper;
-	
+	@Autowired
+	Gson gson;
 	public Server()
 	{
 		this.deviceMapper = Start.ctx.getBean(DeviceMapper.class);
@@ -39,8 +37,8 @@ public class Server {
 	@OnOpen
 	public void onOpen(Session session) {
 		System.out.println(String.format("%s joined the chat room.", session.getId()));
-		ServerMain.peers.add(session);
-		System.out.println("total clients [" + ServerMain.peers.size() + "]");
+		//ServerMain.peers.add(session);
+		System.out.println("total clients [" + deviceMapper.getSessionCount() + "]");
 		try {
 			session.getBasicRemote().sendText("connected..!!");
 		} catch (IOException e) {
@@ -65,47 +63,39 @@ public class Server {
 	{
 		try 
 		{
-			System.out.println("I have received [" + this + "] session [" + session.getId() + "] message ["+ message + "]");
-			System.out.println("size of clients [" + ServerMain.peers.size() + "]");
+			System.out.println("I have received [" + this + "] session [" + session.getId() + "] piID ["+deviceMapper.getPiId(session)+"] message ["+ message + "]");
+			System.out.println("size of clients [" + deviceMapper.getSessionCount() + "]");
 			Request request = new Gson().fromJson(message, Request.class);
 			
-			for (Session peer : ServerMain.peers) 
-			{
-				if (session.getId().equals(peer.getId())) 
-				{
 					Action action = request.getAction();
 					switch (action) 
 					{
 						case SEND_NOTIFICATION:
 							String randonid = request.getData().get("RAND");
-							String appid = "dYKGjAQdvbg:APA91bHFMmNubb-6PNPOfff6wPkmoSlYi43kjeirfLDwKpZpjirSqgIFeM_q-UF66mPMoD22k7CW2ZvBs2o_XPXwxLFU3Cwnqt6o3F-xHO6JOgbiAOhw1iYi8xDVvAf54LsAxcxf5ax4";
-							appid=deviceMapper.getMappingDb().get(request.getPiId()).getDeviceId();
-							System.out.println("To send notification I have found fcm id ["+appid+"] for piid["+request.getPiId()+"]");
-							String json_data = "{\"to\":\""+appid+"\",\"data\": {\"message\": \"This is a Firebase Cloud Messaging Topic Message!#"+randonid+"\",\"title\":\"IOT\"}}";
+							String fmcId = deviceMapper.getFcmId(request);
+							//String appid = "dYKGjAQdvbg:APA91bHFMmNubb-6PNPOfff6wPkmoSlYi43kjeirfLDwKpZpjirSqgIFeM_q-UF66mPMoD22k7CW2ZvBs2o_XPXwxLFU3Cwnqt6o3F-xHO6JOgbiAOhw1iYi8xDVvAf54LsAxcxf5ax4";
+							//appid=deviceMapper.getMappingDb().get(request.getPiId()).getDeviceId();
+							System.out.println("To send notification I have found fcm id ["+fmcId+"] for piid["+request.getPiId()+"]");
+							String json_data = "{\"to\":\""+fmcId+"\",\"data\": {\"message\": \"This is a Firebase Cloud Messaging Topic Message!#"+randonid+"\",\"title\":\"IOT\"}}";
 							Utillity.sendPost("https://fcm.googleapis.com/fcm/send", json_data, "application/json", 5000, 5000);
 						break;
 						
 						case REGISTER_PI:
-							String piId = request.getPiId();
-							PIInfo piinfo = new PIInfo();
-							piinfo.setPiId(piId);
-							piinfo.setSession(session);
-							System.out.println("devicemapper ["+deviceMapper+"]");
-							deviceMapper.getMappingDb().put(piId,piinfo);
+							if(deviceMapper.isValidPi(request))
+							{
+								deviceMapper.saveSession(session, request.getPiId());
+								System.out.println("pi ["+request.getPiId()+"] is stored with session ["+session+"]");
+							}
+							else
+							{
+								//disconnect this connection
+							}
 						break;
-						
+								
 						default:
 							System.out.println("cant understatnd the action..!!");
 						break;
 					}
-					
-					//peer.getBasicRemote().sendText(new Gson().toJson(request));
-	
-				} 
-				else 
-				{
-				}
-			}
 		} 
 		catch (Exception e) 
 		{
@@ -116,16 +106,31 @@ public class Server {
 	@OnClose
 	public void onClose(Session session) throws IOException, EncodeException {
 		System.out.println(String.format("%s left the chat room.", session.getId()));
-		ServerMain.peers.remove(session);
-		// notify peers about leaving the chat room
-		for (Session peer : ServerMain.peers) {
-			String msg = "";
-			peer.getBasicRemote().sendObject(msg);
-		}
-	}
-
-	public void sendMessage()
-	{
+		String piId = deviceMapper.getPiId(session);
+		deviceMapper.updateStatusOfPi(piId, "N");
+		deviceMapper.removeSession(session);
 		
 	}
+
+	public void sendMessage(String piId, Request request) 
+	{
+		String msg = null;
+		try 
+		{
+			msg = gson.toJson(request);
+			Session session = deviceMapper.getSessionfromPiId(piId);
+			session.getBasicRemote().sendText(msg);
+			System.out.println("Msg [" + msg + "] has sent to PI ["+piId+"]");
+		} 
+		catch (IllegalStateException ise) 
+		{
+			System.out.println("unable to send Msg [" + msg + "] to PI ["+piId+"]  Exception ["+ise+"]");
+		} 
+		catch (Exception e) 
+		{
+			System.out.println("unable to send Msg [" + msg + "] to PI ["+piId+"]  Exception ["+e+"]");
+			e.printStackTrace();
+		}
+	}
+	
 }

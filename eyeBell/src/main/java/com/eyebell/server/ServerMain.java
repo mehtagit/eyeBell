@@ -13,7 +13,6 @@ import javax.websocket.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.eyebell.server.config.Config;
 import com.eyebell.server.lib.DeviceMapper;
 import com.eyebell.server.lib.Receiver;
 import com.sun.net.httpserver.Headers;
@@ -31,16 +30,16 @@ public class ServerMain {
 	@Autowired
 	Receiver receiver;	
 	
-	static Set<Session> peers = Collections.synchronizedSet(new HashSet<Session>());
+	//static Set<Session> peers = Collections.synchronizedSet(new HashSet<Session>());
 	//static HashMap<String,Session> peers = new HashMap<String,Session>();
 	
 		
 		public void Start() {
-			new Config().load();
+			
 			System.out.println("config is loaded");
 			//startServer();
 			org.glassfish.tyrus.server.Server gfserver =
-					new org.glassfish.tyrus.server.Server("127.0.0.1", 8025, "/ws", null,Server.class);
+					new org.glassfish.tyrus.server.Server("103.206.248.236", 8025, "/ws", null,Server.class);
 		
 			HttpServer httpServer = null;
 			

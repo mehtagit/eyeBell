@@ -2,6 +2,7 @@ package com.eyebell.pi.config;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.net.DatagramPacket;
@@ -13,6 +14,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +36,8 @@ public class Utillity {
 
 	public int cameraON()
 	{
-		int rand = 12345;
-		if (openBrowser("https://103.206.248.236:8443/NOW.html?home="+rand))
+		int rand = new Random().nextInt();
+		if (openBrowser("https://103.206.248.236:8443/bell.html?home="+rand))
 			return rand;
 		else
 			return -1;
@@ -79,6 +81,13 @@ public class Utillity {
 	public int cameraOFF()
 	{
 		System.out.println("camera is now off");
+		String downCommand = "/home/pi/eyeBell/down.sh";
+		Runtime rt = Runtime.getRuntime();
+		try {
+			rt.exec(downCommand);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return 0;
 	}
 

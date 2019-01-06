@@ -13,12 +13,15 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
@@ -83,6 +86,21 @@ public class Utillity {
 		return sendPost(url, data, contextType, 1000, 1000);
 	}
 
+	public Connection getConnection()
+	{
+		try 
+		{
+			 Class.forName("com.mysql.jdbc.Driver");
+	            Connection con = DriverManager.
+	                getConnection("jdbc:mysql://127.0.0.1:3306/smarthome"
+	                    ,"root","Jatin@123");
+	            return con;
+		} catch (Exception e) {
+			System.out.println("unable to create connection....."+e);
+			e.printStackTrace();
+			return null;
+		}
+	}
 	public static String sendPost(String url, String data, String contextType, int readTimeOut, int connectTimeOut) {
 		Exception E = null;
 		DataOutputStream wr = null;
