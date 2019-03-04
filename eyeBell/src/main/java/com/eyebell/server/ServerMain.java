@@ -39,7 +39,7 @@ public class ServerMain {
 			System.out.println("config is loaded");
 			//startServer();
 			org.glassfish.tyrus.server.Server gfserver =
-					new org.glassfish.tyrus.server.Server("103.206.248.236", 8025, "/ws", null,Server.class);
+					new org.glassfish.tyrus.server.Server("103.122.168.35", 8025, "/ws", null,Server.class);
 		
 			HttpServer httpServer = null;
 			

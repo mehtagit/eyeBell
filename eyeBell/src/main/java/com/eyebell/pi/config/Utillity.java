@@ -20,6 +20,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.eyebell.pi.lib.SignalListener;
+import com.pi4j.io.gpio.PinState;
+
 @Component("piUtillity")
 public class Utillity {
 
@@ -37,10 +40,40 @@ public class Utillity {
 	public int cameraON()
 	{
 		int rand = new Random().nextInt();
+		if (rand <0)
+		{rand = rand*-1;}
 		if (openBrowser("https://103.206.248.236:8443/bell.html?home="+rand))
 			return rand;
 		else
 			return -1;
+	}
+	
+	public void cameraON(String randId)
+	{
+		if (openBrowser("https://103.206.248.236:8443/bell.html?home="+randId));	
+	}
+	
+	public void lightOn(String id)
+	{try{
+		System.out.println("light on prev ["+SignalListener.lightPin.getState()+"");
+		SignalListener.lightPin.low();
+		System.out.println("light on after ["+SignalListener.lightPin.getState()+"");
+	}catch (Exception e) {
+		System.out.println("Exception in light on ");
+		e.printStackTrace();
+	}
+	}
+	
+	public void lightOff(String id)
+	{try{
+		System.out.println("light off prev ["+SignalListener.lightPin.getState()+"");
+		SignalListener.lightPin.high();
+		System.out.println("light off after ["+SignalListener.lightPin.getState()+"");
+	}catch (Exception e) {
+		System.out.println("Exception in light off ");
+		e.printStackTrace();
+		// TODO: handle exception
+	}
 	}
 	
 	public boolean openBrowser(String args) 
@@ -66,7 +99,21 @@ public class Utillity {
 					cmd.append((i == 0 ? "" : " || ") + browsers[i] + " \"" + url + "\" ");
 				}
 				System.out.println("command formed : " + cmd);
-				rt.exec(new String[] { "sh", "-c", cmd.toString() });
+				
+				//rt.exec("matchbox-window-Manager -use_cursor no&");
+				rt.exec(new String[] { "/bin/sh", "-c", cmd.toString() });
+				/*BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+				BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+				String browser_openingOutput = null;
+					while ((browser_openingOutput = stdInput.readLine()) != null) {
+					    System.out.println("sucess open output : "+browser_openingOutput);
+					}
+
+					// read any errors from the attempted command
+					
+					while ((browser_openingOutput = stdError.readLine()) != null) {
+					    System.out.println("fail open output : "+browser_openingOutput);
+					}*/
 			} else {
 				System.out.println("mo OS found");
 				return false;
@@ -301,7 +348,17 @@ public class Utillity {
 		return time.format(dateTimeFormatter);
 	}
 
-
+	public void soft_reset()
+	{
+		System.out.println("reset for pi");
+		String downCommand = "/home/pi/eyeBell/reset.sh";
+		Runtime rt = Runtime.getRuntime();
+		try {
+			rt.exec(downCommand);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	public String getTimeStampForIn(int hours) {
 		LocalDateTime now = LocalDateTime.now();
 		now = now.plusHours(hours);

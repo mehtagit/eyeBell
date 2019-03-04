@@ -14,6 +14,7 @@ import javax.media.ExtendedCachingControl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.sun.net.httpserver.HttpHandler;
+import com.eyebell.pojo.Action;
 import com.eyebell.pojo.Request;
 import com.eyebell.server.ServerService;
 import com.google.gson.Gson;
@@ -28,6 +29,8 @@ public class Receiver implements HttpHandler
 	@Autowired
 	ServerService serverService;
 	
+	@Autowired
+	com.eyebell.util.Utillity utillity;
 	@Override
 	public void handle(HttpExchange exchange) throws IOException 
 	{
@@ -58,6 +61,7 @@ public class Receiver implements HttpHandler
 			e.printStackTrace();
 		}
 	    System.out.println("parsed to request action ["+request.getAction()+"]");
+	    String piId = null;
 	    switch (request.getAction())
 	    {
 		case REGISTER_NEW_DEVICE:
@@ -70,7 +74,40 @@ public class Receiver implements HttpHandler
 		
 		case CAMERA_OFF:
 			System.out.println("Camera off request received");
-			String piId = deviceMapper.getPiIdFromMsisdn(request.getMsisdn());
+			piId = deviceMapper.getPiIdFromMsisdn(request.getMsisdn());
+			serverService.sendMessage(piId, request);
+		break;
+		
+		case CAMERA_ON:
+			System.out.println("Camera on request received");
+			piId = deviceMapper.getPiIdFromMsisdn(request.getMsisdn());
+			serverService.sendMessage(piId, request);
+		break;
+		
+		case LIGHT_ON:
+			System.out.println("Light on request received");
+			piId = deviceMapper.getPiIdFromMsisdn(request.getMsisdn());
+			serverService.sendMessage(piId, request);
+		break;
+		
+		case LIGHT_OFF:
+			System.out.println("Light off request received");
+			piId = deviceMapper.getPiIdFromMsisdn(request.getMsisdn());
+			serverService.sendMessage(piId, request);
+		break;
+		
+		case RESET_SOFT:
+			System.out.println("soft reset request received");
+			piId = deviceMapper.getPiIdFromMsisdn(request.getMsisdn());
+			serverService.sendMessage(piId, request);
+		break;
+		
+		case RESET_HARD:
+			System.out.println("hard reset request received");
+			utillity.hard_reset();
+			Request req = new Request();
+			req.setAction(Action.RESET_SOFT);
+			piId = deviceMapper.getPiIdFromMsisdn(req.getMsisdn());
 			serverService.sendMessage(piId, request);
 		break;
 		

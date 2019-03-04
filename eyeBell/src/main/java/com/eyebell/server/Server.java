@@ -10,6 +10,7 @@ import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
+import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,19 +26,18 @@ import com.google.gson.Gson;
 @ServerEndpoint(value = "/chat")
 public class Server {
 
-	
 	DeviceMapper deviceMapper;
 	@Autowired
 	Gson gson;
-	public Server()
-	{
+
+	public Server() {
 		this.deviceMapper = Start.ctx.getBean(DeviceMapper.class);
 	}
-	
+
 	@OnOpen
 	public void onOpen(Session session) {
 		System.out.println(String.format("%s joined the chat room.", session.getId()));
-		//ServerMain.peers.add(session);
+		// ServerMain.peers.add(session);
 		System.out.println("total clients [" + deviceMapper.getSessionCount() + "]");
 		try {
 			session.getBasicRemote().sendText("connected..!!");
@@ -57,48 +57,63 @@ public class Server {
 		}
 	}
 
-	
 	@OnMessage
-	public void onMessage(String message, Session session) throws IOException, EncodeException 
-	{
-		try 
-		{
-			System.out.println("I have received [" + this + "] session [" + session.getId() + "] piID ["+deviceMapper.getPiId(session)+"] message ["+ message + "]");
+	public void onMessage(String message, Session session) throws IOException, EncodeException {
+		try {
+			System.out.println("I have received [" + this + "] session [" + session.getId() + "] piID ["
+					+ deviceMapper.getPiId(session) + "] message [" + message + "]");
 			System.out.println("size of clients [" + deviceMapper.getSessionCount() + "]");
 			Request request = new Gson().fromJson(message, Request.class);
-			
-					Action action = request.getAction();
-					switch (action) 
-					{
-						case SEND_NOTIFICATION:
-							String randonid = request.getData().get("RAND");
-							String fmcId = deviceMapper.getFcmId(request);
-							//String appid = "dYKGjAQdvbg:APA91bHFMmNubb-6PNPOfff6wPkmoSlYi43kjeirfLDwKpZpjirSqgIFeM_q-UF66mPMoD22k7CW2ZvBs2o_XPXwxLFU3Cwnqt6o3F-xHO6JOgbiAOhw1iYi8xDVvAf54LsAxcxf5ax4";
-							//appid=deviceMapper.getMappingDb().get(request.getPiId()).getDeviceId();
-							System.out.println("To send notification I have found fcm id ["+fmcId+"] for piid["+request.getPiId()+"]");
-							String json_data = "{\"to\":\""+fmcId+"\",\"data\": {\"message\": \"This is a Firebase Cloud Messaging Topic Message!#"+randonid+"\",\"title\":\"IOT\"}}";
-							Utillity.sendPost("https://fcm.googleapis.com/fcm/send", json_data, "application/json", 5000, 5000);
-						break;
-						
-						case REGISTER_PI:
-							if(deviceMapper.isValidPi(request))
-							{
-								deviceMapper.saveSession(session, request.getPiId());
-								System.out.println("pi ["+request.getPiId()+"] is stored with session ["+session+"]");
-							}
-							else
-							{
-								//disconnect this connection
-							}
-						break;
-								
-						default:
-							System.out.println("cant understatnd the action..!!");
-						break;
-					}
-		} 
-		catch (Exception e) 
-		{
+
+			Action action = request.getAction();
+			switch (action) {
+			case SEND_NOTIFICATION:
+				String randonid = request.getData().get("RAND");
+				String fmcId = deviceMapper.getFcmId(request);
+				// String appid =
+				// "dYKGjAQdvbg:APA91bHFMmNubb-6PNPOfff6wPkmoSlYi43kjeirfLDwKpZpjirSqgIFeM_q-UF66mPMoD22k7CW2ZvBs2o_XPXwxLFU3Cwnqt6o3F-xHO6JOgbiAOhw1iYi8xDVvAf54LsAxcxf5ax4";
+				// appid=deviceMapper.getMappingDb().get(request.getPiId()).getDeviceId();
+				String ntype = request.getData().get("type");
+				String notification_message = "Someone is at your Door Step";
+				String notification_type = "bell";
+				if (ntype.equals("bell"))
+				{
+					
+				}
+				else if (ntype.equals("connected"))
+				{
+					notification_message = "Feel Secure.. You are connected with Home";
+					notification_type = "connected";
+				}
+				else if (ntype.equals("disconnected"))
+				{
+					notification_message = "Oop!! Cant reach Home";
+					notification_type = "disconnected";
+				}
+				System.out.println(
+						"To send notification I have found fcm id [" + fmcId + "] for piid[" + request.getPiId() + "]");
+				String json_data = "{\"to\":\"" + fmcId
+						+ "\",\"data\": {\"message\": \""+notification_message+"\",\"RAND\":\"" + randonid
+						+ "\",\"title\":\""+notification_type+"\",\"type\":\""+notification_type+"\"}"
+						+ "}";
+				Utillity.sendPost("https://fcm.googleapis.com/fcm/send", json_data, "application/json", 5000, 5000);
+				break;
+
+
+			case REGISTER_PI:
+				if (deviceMapper.isValidPi(request)) {
+					deviceMapper.saveSession(session, request.getPiId());
+					System.out.println("pi [" + request.getPiId() + "] is stored with session [" + session + "]");
+				} else {
+					// disconnect this connection
+				}
+				break;
+
+			default:
+				System.out.println("cant understatnd the action..!!");
+				break;
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -112,25 +127,19 @@ public class Server {
 		
 	}
 
-	public void sendMessage(String piId, Request request) 
-	{
+	public void sendMessage(String piId, Request request) {
 		String msg = null;
-		try 
-		{
+		try {
 			msg = gson.toJson(request);
 			Session session = deviceMapper.getSessionfromPiId(piId);
 			session.getBasicRemote().sendText(msg);
-			System.out.println("Msg [" + msg + "] has sent to PI ["+piId+"]");
-		} 
-		catch (IllegalStateException ise) 
-		{
-			System.out.println("unable to send Msg [" + msg + "] to PI ["+piId+"]  Exception ["+ise+"]");
-		} 
-		catch (Exception e) 
-		{
-			System.out.println("unable to send Msg [" + msg + "] to PI ["+piId+"]  Exception ["+e+"]");
+			System.out.println("Msg [" + msg + "] has sent to PI [" + piId + "]");
+		} catch (IllegalStateException ise) {
+			System.out.println("unable to send Msg [" + msg + "] to PI [" + piId + "]  Exception [" + ise + "]");
+		} catch (Exception e) {
+			System.out.println("unable to send Msg [" + msg + "] to PI [" + piId + "]  Exception [" + e + "]");
 			e.printStackTrace();
 		}
 	}
-	
+
 }

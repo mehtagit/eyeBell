@@ -40,7 +40,25 @@ public class Client {
 		switch (request.getAction()) {
 		case CAMERA_OFF:
 			utillity.cameraOFF();
-			break;
+		break;
+			
+		case CAMERA_ON:
+			utillity.cameraON((String)request.getData().get("RAND"));
+		break;
+		
+		case LIGHT_ON:
+			String lightId = "";//(String)request.getData().get("RAND");
+			utillity.lightOn(lightId);
+		break;
+		
+		case LIGHT_OFF:
+			String lightId1 = "";//(String)request.getData().get("RAND");
+			utillity.lightOff(lightId1);
+		break;
+		
+		case RESET_SOFT:
+			utillity.soft_reset();
+		break;
 
 		default:
 			System.out.println("some unknown action received....");

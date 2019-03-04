@@ -3,6 +3,7 @@ package com.eyebell.util;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.net.ConnectException;
@@ -169,7 +170,18 @@ public class Utillity {
 	public String callUrl(String url) {
 		return callUrl(url, 1000, 1000);
 	}
-
+	
+	public void hard_reset()
+	{
+		System.out.println("reset for server");
+		String downCommand = "/root/WhileIdea/easyrtc/eyeBell/reset.sh";
+		Runtime rt = Runtime.getRuntime();
+		try {
+			rt.exec(downCommand);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	public static String callUrl(String URL_Str, int readTimeOut, int connectTimeOut) {
 		BufferedReader BR = null;
 		Exception E = null;
