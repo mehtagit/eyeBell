@@ -50,7 +50,7 @@ public class Utillity {
 	
 	public void cameraON(String randId)
 	{
-		if (openBrowser("https://103.206.248.236:8443/bell.html?home="+randId));	
+		if (openBrowser("https://103.122.168.35:8443/bell.html?home="+randId));	
 	}
 	
 	public void lightOn(String id)
