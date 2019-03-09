@@ -42,7 +42,7 @@ public class Utillity {
 		int rand = new Random().nextInt();
 		if (rand <0)
 		{rand = rand*-1;}
-		if (openBrowser("https://103.206.248.236:8443/bell.html?home="+rand))
+		if (openBrowser("https://103.122.168.35:8443/bell.html?home="+rand))
 			return rand;
 		else
 			return -1;
